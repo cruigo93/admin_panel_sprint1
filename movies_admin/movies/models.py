@@ -34,25 +34,42 @@ class Genre(UUIDMixin, TimeStampedMixin):
         return self.name
 
 
+class Gender(models.TextChoices):
+    MALE = 'male', _('male')
+    FEMALE = 'female', _('female')
+
+
+class Person(UUIDMixin, TimeStampedMixin):
+    full_name = models.CharField(_('name'), max_length=255)
+    # gender = models.TextField(_('gender'), choices=Gender.choices, null=True)
+
+    class Meta:
+        db_table = "content\".\"person"
+        verbose_name = 'Персона'
+        verbose_name_plural = 'Персоны'
+
+    def __str__(self):
+        return self.full_name
+
+
 class Filmwork(UUIDMixin, TimeStampedMixin):
 
     class TypeChoices(models.TextChoices):
         MOVIE = 'MV'
         TV_SHOW = 'TV'
     title = models.CharField(_('title'), max_length=255)
-    description2 = models.TextField(_('description'), blank=True)
+    description = models.TextField(_('description'), blank=True)
     creation_date = models.DateField('creation_date', blank=True)
     rating = models.FloatField('rating', blank=True, validators=[
         MinValueValidator(0), MaxValueValidator(100)])
     type = models.CharField(
         'type', choices=TypeChoices.choices, blank=True, max_length=255)
     genres = models.ManyToManyField(Genre, through='GenreFilmwork')
-    certificate = models.CharField(
-        _('certificate'), max_length=512, blank=True)
-    file_path = models.FileField(
-        _('file'), blank=True, null=True, upload_to='movies/')
-
-    # persons = models.ManyToManyField(Person, through='PersonFilmwork')
+    persons = models.ManyToManyField(Person, through='PersonFilmwork')
+    # certificate = models.CharField(
+    #     _('certificate'), max_length=512, blank=True)
+    # file_path = models.FileField(
+    #     _('file'), blank=True, null=True, upload_to='movies/')
 
     class Meta:
         db_table = "content\".\"filmwork"
@@ -71,25 +88,6 @@ class GenreFilmwork(UUIDMixin):
 
     class Meta:
         db_table = "content\".\"genre_filmwork"
-
-
-class Gender(models.TextChoices):
-    MALE = 'male', _('male')
-    FEMALE = 'female', _('female')
-
-
-class Person(UUIDMixin, TimeStampedMixin):
-    full_name = models.CharField(_('name'), max_length=255)
-    filmworks = models.ManyToManyField(Filmwork, through='PersonFilmwork')
-    gender = models.TextField(_('gender'), choices=Gender.choices, null=True)
-
-    class Meta:
-        db_table = "content\".\"person"
-        verbose_name = 'Персона'
-        verbose_name_plural = 'Персоны'
-
-    def __str__(self):
-        return self.full_name
 
 
 class PersonFilmwork(UUIDMixin):
