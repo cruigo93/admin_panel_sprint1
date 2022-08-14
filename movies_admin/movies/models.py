@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
 import uuid
+from datetime import date, datetime
 
 
 class TimeStampedMixin(models.Model):
@@ -21,7 +22,7 @@ class UUIDMixin(models.Model):
 
 class Genre(UUIDMixin, TimeStampedMixin):
     name = models.CharField(_('name'), max_length=255)
-    description = models.TextField('description', blank=True)
+    description = models.TextField('description', blank=True, null=True)
 
     class Meta:
         # Ваши таблицы находятся в нестандартной схеме. Это нужно указать в классе модели
@@ -58,18 +59,16 @@ class Filmwork(UUIDMixin, TimeStampedMixin):
         MOVIE = 'MV'
         TV_SHOW = 'TV'
     title = models.CharField(_('title'), max_length=255)
-    description = models.TextField(_('description'), blank=True)
-    creation_date = models.DateField('creation_date', blank=True)
+    description = models.TextField(_('description'), blank=True, null=True)
+    creation_date = models.DateField('creation_date', blank=True, null=True)
     rating = models.FloatField('rating', blank=True, validators=[
-        MinValueValidator(0), MaxValueValidator(100)])
+        MinValueValidator(0), MaxValueValidator(100)], null=True)
     type = models.CharField(
-        'type', choices=TypeChoices.choices, blank=True, max_length=255)
+        'type', choices=TypeChoices.choices, max_length=255)
     genres = models.ManyToManyField(Genre, through='GenreFilmwork')
     persons = models.ManyToManyField(Person, through='PersonFilmwork')
-    # certificate = models.CharField(
-    #     _('certificate'), max_length=512, blank=True)
-    # file_path = models.FileField(
-    #     _('file'), blank=True, null=True, upload_to='movies/')
+    file_path = models.FileField(
+        _('file'), blank=True, null=True, upload_to='movies/')
 
     class Meta:
         db_table = "content\".\"filmwork"
