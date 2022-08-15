@@ -1,8 +1,9 @@
+import uuid
+from datetime import date, datetime
+
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
-import uuid
-from datetime import date, datetime
 
 
 class TimeStampedMixin(models.Model):
@@ -25,29 +26,27 @@ class Genre(UUIDMixin, TimeStampedMixin):
     description = models.TextField('description', blank=True, null=True)
 
     class Meta:
-        # Ваши таблицы находятся в нестандартной схеме. Это нужно указать в классе модели
         db_table = "content\".\"genre"
-        # Следующие два поля отвечают за название модели в интерфейсе
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
+        indexes = [
+            models.Index(fields=['name'], name='name_idx'),
+        ]
 
     def __str__(self):
         return self.name
 
 
-class Gender(models.TextChoices):
-    MALE = 'male', _('male')
-    FEMALE = 'female', _('female')
-
-
 class Person(UUIDMixin, TimeStampedMixin):
     full_name = models.CharField(_('name'), max_length=255)
-    # gender = models.TextField(_('gender'), choices=Gender.choices, null=True)
 
     class Meta:
         db_table = "content\".\"person"
         verbose_name = 'Персона'
         verbose_name_plural = 'Персоны'
+        indexes = [
+            models.Index(fields=['full_name'], name='full_name_idx'),
+        ]
 
     def __str__(self):
         return self.full_name
@@ -72,28 +71,43 @@ class Filmwork(UUIDMixin, TimeStampedMixin):
 
     class Meta:
         db_table = "content\".\"filmwork"
-        # Следующие два поля отвечают за название модели в интерфейсе
         verbose_name = 'Фильм'
         verbose_name_plural = 'Фильмы'
+        indexes = [
+            models.Index(fields=['title'], name='title_idx'),
+        ]
 
     def __str__(self):
         return self.title
 
 
 class GenreFilmwork(UUIDMixin):
-    filmwork = models.ForeignKey('Filmwork', on_delete=models.CASCADE)
-    genre = models.ForeignKey('Genre', on_delete=models.CASCADE)
+    filmwork = models.ForeignKey(Filmwork, on_delete=models.CASCADE)
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "content\".\"genre_filmwork"
+        indexes = [
+            models.Index(fields=['filmwork_id', 'genre_id'],
+                         name='filmwork_genre_idx'),
+        ]
 
 
 class PersonFilmwork(UUIDMixin):
-    filmwork = models.ForeignKey('Filmwork', on_delete=models.CASCADE)
-    person = models.ForeignKey('Person', on_delete=models.CASCADE)
-    role = models.CharField(_('role'), null=True, max_length=255)
+    class RoleChoices(models.TextChoices):
+        DIRECTOR = 'director', _('director')
+        ACTOR = 'actor', _('actor')
+        WRITER = 'writer', _('writer')
+    filmwork = models.ForeignKey(Filmwork, on_delete=models.CASCADE)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    role = models.CharField(_('role'), null=True,
+                            max_length=255, choices=RoleChoices.choices)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "content\".\"person_filmwork"
+        indexes = [
+            models.Index(fields=['filmwork_id', 'person_id'],
+                         name='filmwork_person_idx'),
+        ]

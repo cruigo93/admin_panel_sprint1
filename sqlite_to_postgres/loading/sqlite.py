@@ -7,60 +7,20 @@ class SQLiteLoader:
 
     def load_data(self) -> dict[str, list]:
         data = {
-            "movies": self.load_movies(),
-            "genres": self.load_genres(),
-            "persons": self.load_persons(),
-            "genre_filmwors": self.load_genre_filmwork(),
-            "person_filmwork": self.load_person_filmwork()
+            "movies": self.load_(Movie, 'film_work'),
+            "genres": self.load_(Genre, 'genre'),
+            "persons": self.load_(Person, 'person'),
+            "genre_filmwors": self.load_(GenreFilmwork, 'genre_film_work'),
+            "person_filmwork": self.load_(PersonFilmwork, 'person_film_work')
         }
         return data
 
-    def load_movies(self) -> list[Movie]:
+    def load_(self, data_class, table_name: str) -> list[Movie]:
         curs = self.connection.cursor()
-        curs.execute("SELECT * FROM film_work;")
+        curs.execute(f"SELECT * FROM {table_name};")
         data = curs.fetchall()
-        movies = []
+        records = []
         for m in data:
-            movie = Movie(**m)
-            movies.append(movie)
-        return movies
-
-    def load_genres(self) -> list[Genre]:
-        curs = self.connection.cursor()
-        curs.execute("SELECT * FROM genre;")
-        data = curs.fetchall()
-        genres = []
-        for g in data:
-            genre = Genre(**g)
-            genres.append(genre)
-        return genres
-
-    def load_persons(self) -> list[Person]:
-        curs = self.connection.cursor()
-        curs.execute("SELECT * FROM person;")
-        data = curs.fetchall()
-        persons = []
-        for p in data:
-            person = Person(**p)
-            persons.append(person)
-        return persons
-
-    def load_person_filmwork(self) -> list[PersonFilmwork]:
-        curs = self.connection.cursor()
-        curs.execute("SELECT * FROM person_film_work;")
-        data = curs.fetchall()
-        records = []
-        for p in data:
-            pf = PersonFilmwork(**p)
-            records.append(pf)
-        return records
-
-    def load_genre_filmwork(self) -> list[GenreFilmwork]:
-        curs = self.connection.cursor()
-        curs.execute("SELECT * FROM genre_film_work;")
-        data = curs.fetchall()
-        records = []
-        for p in data:
-            gf = GenreFilmwork(**p)
-            records.append(gf)
+            record = data_class(**m)
+            records.append(record)
         return records
