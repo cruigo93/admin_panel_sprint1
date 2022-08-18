@@ -30,16 +30,16 @@ CREATE TABLE IF NOT EXISTS content.person (
 
 CREATE TABLE IF NOT EXISTS content.person_filmwork (
     id uuid PRIMARY KEY,
-    filmwork_id uuid NOT NULL,
-    person_id uuid NOT NULL,
+    filmwork_id uuid NOT NULL REFERENCES content.filmwork (id) ON DELETE CASCADE,
+    person_id uuid NOT NULL REFERENCES content.person (id) ON DELETE CASCADE,
     role TEXT NOT NULL,
     created timestamp with time zone
 ); 
 
 CREATE TABLE IF NOT EXISTS content.genre_filmwork (
     id uuid PRIMARY KEY,
-    filmwork_id uuid NOT NULL,
-    genre_id uuid NOT NULL,
+    filmwork_id uuid NOT NULL REFERENCES content.filmwork (id) ON DELETE CASCADE,
+    genre_id uuid NOT NULL REFERENCES content.genre (id) ON DELETE CASCADE,
     created timestamp with time zone
 ); 
 
