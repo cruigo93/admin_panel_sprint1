@@ -9,6 +9,7 @@ import sqlite3
 from dotenv import load_dotenv
 
 from loading import PostgresSaver, SQLiteLoader
+from loading.data import Movie, Person, Genre, PersonFilmwork, GenreFilmwork
 
 
 load_dotenv()
@@ -44,8 +45,16 @@ def load_from_sqlite(connection: sqlite3.Connection, pg_conn: _connection):
     postgres_saver = PostgresSaver(pg_conn)
     sqlite_loader = SQLiteLoader(connection)
 
-    data = sqlite_loader.load_data()
-    postgres_saver.save_all_data(data)
+    for data in sqlite_loader.load(Movie, 'film_work'):
+        postgres_saver.save_all_filmworks(data)
+    for data in sqlite_loader.load(Genre, 'genre'):
+        postgres_saver.save_all_genres(data)
+    for data in sqlite_loader.load(Person, 'person'):
+        postgres_saver.save_all_persons(data)
+    for data in sqlite_loader.load(GenreFilmwork, 'genre_film_work'):
+        postgres_saver.save_all_genre_filmworks(data)
+    for data in sqlite_loader.load(PersonFilmwork, 'person_film_work'):
+        postgres_saver.save_all_person_filmworks(data)
 
 
 if __name__ == '__main__':
